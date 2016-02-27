@@ -1,0 +1,8 @@
+{
+	"author": "Daniel Lozano",
+	"autoload": {
+		"psr-4": {
+			"Framework\\": "src/Framework/"
+		}
+	}
+}
