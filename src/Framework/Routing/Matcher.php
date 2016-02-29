@@ -40,6 +40,8 @@ class Matcher
 	{
 		foreach ($this->collection->getCollection() as $route) {
 
+			$arguments = false;
+
 			if ($route instanceof Route) {
 				// Obtener la expresión regular
 				$regex = $route->generateRegex();
@@ -51,11 +53,12 @@ class Matcher
 				// ya podemos hacer dispatch.
 				if (1 === $match) {
 					$arguments = $route->getRouteArguments($route->getOption('path'), $request);
-					// A partir de aquí dispatch
+					
+					// incluir el objeto ruta en los parámetros. NOTE: quizás muy pesado el incluir el propio objeto.
+					$arguments['route'] = $route;
 				}
-				// En caso de que no haya ninguna coincidencia
-				return false;
 			}
 		}
+		return $arguments;
 	}
 }

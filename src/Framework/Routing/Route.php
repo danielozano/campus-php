@@ -3,6 +3,9 @@
 namespace Framework\Routing;
 /**
  * TODO: hacer obligatorios las opciones: path, name y controller.
+ * TODO: Generar regex con restricciones (decimal, string)
+ * TODO: mover getController a ControllerResolver
+ * TODO: mover getMethod a ControllerResolver
  */
 /**
  * La funcionalidad de esta clase es otorgar abstracción a una entidad Ruta. Es decir poder manipular
@@ -44,8 +47,6 @@ class Route
 	{
 		$this->options = $options;
 		$this->parameters = $parameters;
-		$this->setController($options);
-		$this->setMethod($options);
 	}
 
 	/**
@@ -82,16 +83,18 @@ class Route
 
 	/**
 	 * Establece la clase controladora
+	 * TODO: mover la acción de dividir el controlador a ControllerResolver.
 	 * 
 	 * @param array
 	 */
-	private function setController($options)
+/*	private function setController($options)
 	{
 		$controllerString = $options['controller'];
 		$controllerArray = explode(':', $controllerString);
 		$controller = $controllerArray[0];
 		$this->controller = $controller;
 	}
+*/
 
 	/**
 	 * Establece el método del controlador a llamar
@@ -123,7 +126,7 @@ class Route
 	 */
 	public function getController()
 	{
-		return $this->controller;
+		return $this->getOption('controller');
 	}
 
 	/**
@@ -204,7 +207,7 @@ class Route
 		foreach ($matches as $match) {
 			// Nombre de la variable obtenida del pattern
 			$varName = substr($match[0][0], 1, -1);	
-			$varRegex .= "(?P<$varName>/[^/]+)?";
+			$varRegex .= "\/(?P<$varName>[^/]+)?";
 		}
 		// La parte estática desde el inicio hasta el inicio del primer parámetro, sin el slash final
 		$staticPath = substr($pattern, 0, $matches[0][0][1] - 1);
