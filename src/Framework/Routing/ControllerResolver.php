@@ -1,38 +1,13 @@
 <?php
-
+/**
+ * @author  Daniel Lozano Morales <dn.lozano.m@gmail.com>
+ */
 namespace Framework\Routing;
 /**
  * La función de esta clase es identificar el controlador que debe ser ejecutado, y que parámetros deben ser pasados a dicho controlador.
  */
 class ControllerResolver
 {
-	private $route;
-	private $arguments = array();
-	private $controller;
-	private $method;
-
-	/**
-	 * [resolveArguments description]
-	 * @param  [type] $controller [description]
-	 * @param  [type] $method     [description]
-	 * @param  [type] $arguments  [description]
-	 * @return [type]             [description]
-	 */
-	public function resolveArguments($controller, $method, $arguments)
-	{
-		$inverseController = new \ReflectionMethod($controller, $method);
-
-		$methodArguments = $inverseController->getParameters();
-
-		$result = array();
-
-		foreach ($methodArguments as $methodArgument) {
-			$argumentName = $methodArgument->getName105();
-			$result[] = $this->arguments($argumentName);
-		}
-
-		return $result;
-	}
 	/**
 	 * Obtener el controlador de la ruta
 	 * 
@@ -71,22 +46,13 @@ class ControllerResolver
 	/**
 	 * Devolver un objeto de la clase controlador
 	 * 
-	 * @param  [type] $class [description]
-	 * @return [type]        [description]
+	 * @param  string $class
+	 * 
+	 * @return $class  Objeto de la clase $class()
 	 */
 	private function createControllerObject($class)
 	{
 		return new $class();
-	}
-
-	/**
-	 * Obtener el método a llamar
-	 * 
-	 * @return string
-	 */
-	public function getMethod()
-	{
-		return $this->method;
 	}
 
 	/**

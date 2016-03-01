@@ -1,6 +1,8 @@
 <?php
 // src/Framework/Routing/Router.php
-
+/**
+ * @author Daniel Lozano Morales <dn.lozano.m@gmail.com>
+ */
 namespace Framework\Routing;
 
 /**
@@ -12,19 +14,35 @@ namespace Framework\Routing;
  */
 class Router implements RouterInterface
 {
+	/**
+	 * Objeto para buscar rutas coincidentes
+	 * 
+	 * @var Framework\Routing\Matcher
+	 */
 	private $matcher;
+
+	/**
+	 * Objeto para resolver el controlador y sus argumentos
+	 * 
+	 * @var Framework\Routing\ControllerResolver
+	 */
 	private $resolver;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param Matcher $matcher
+	 */
 	public function __construct(Matcher $matcher)
 	{
 		$this->matcher = $matcher;
 	}
 
 	/**
-	 * Función principal de la clase, será la que compruebe si hay coincidencias
-	 * para la petición actual, y 
-	 * @param  [type] $request [description]
-	 * @return [type]          [description]
+	 * Maneja la petición actual, redirigiendo el flujo de la aplicación
+	 * en función de las rutas definidas
+	 * 
+	 * @param  string $request
 	 */
 	public function handle($request)
 	{
@@ -36,26 +54,42 @@ class Router implements RouterInterface
 			header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
 			die('Not Found');
 		}
-		$route = $parameters['route'];
-		// necesito hacer llamada a una función de una clase
-		// Controlador a ejecutar de la ruta matcheada
+		/**
+		 * Nos permitirá resolver el controlador y sus argumentos
+		 * 
+		 * @var Framework\Routing\ControllerResolver
+		 */
 		$resolver = new ControllerResolver();
 		
 		$controller = $resolver->getController($parameters);
 
-		// Parámetros ordenados gracias a Reflection
+		/**
+		 * Parámetros obtenidos de la ruta que debemos pasar al contorlador
+		 * 
+		 * @var array
+		 */
 		$arguments = $resolver->getArguments($parameters, $controller);
 		
 		// Llamada dinámica
 		call_user_func_array($controller, $arguments);
 	}
 
+	/**
+	 * Devuelve el matcher
+	 * 
+	 * @return Framework\Routing\Matcher
+	 */
 	public function getMatcher()
 	{
 		return $this->matcher;
 	}
 
-	public function setMatcher($matcher)
+	/**
+	 * Establece el matcher
+	 * 
+	 * @param Framework\Routing\Matcher $matcher
+	 */
+	public function setMatcher(Matcher $matcher)
 	{
 		$this->matcher = $matcher;
 	}

@@ -1,7 +1,6 @@
 <?php
 /**
  * @author  Daniel Lozano Morales <dn.lozano.m@gmail.com>
- * @license MIT
  */
 namespace Framework\Routing;
 /**

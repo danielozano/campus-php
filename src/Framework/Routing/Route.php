@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * @author  Daniel Lozano Morales <dn.lozano.m@gmail.com>
+ */
 namespace Framework\Routing;
 /**
  * TODO: hacer obligatorios las opciones: path, name y controller.
