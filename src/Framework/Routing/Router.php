@@ -71,7 +71,7 @@ class Router implements RouterInterface
 		$arguments = $resolver->getArguments($parameters, $controller);
 		
 		// Llamada dinámica
-		call_user_func_array($controller, $arguments);
+		return call_user_func_array($controller, $arguments);
 	}
 
 	/**

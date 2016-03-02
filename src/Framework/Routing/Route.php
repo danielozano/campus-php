@@ -6,8 +6,7 @@ namespace Framework\Routing;
 /**
  * TODO: hacer obligatorios las opciones: path, name y controller.
  * TODO: Generar regex con restricciones (decimal, string)
- * TODO: mover getController a ControllerResolver
- * TODO: mover getMethod a ControllerResolver
+ * TODO: arreglar regex para que se admita un tailing slash, ejemplo: /hola/{name} resuelva a: /hola y /hola/daniel. Debería coincidir con /hola, /hola/ y /hola/daniel
  */
 /**
  * La funcionalidad de esta clase es otorgar abstracción a una entidad Ruta. Es decir poder manipular
@@ -82,35 +81,6 @@ class Route
 		return $this->options[$name];
 	}
 
-
-	/**
-	 * Establece la clase controladora
-	 * TODO: mover la acción de dividir el controlador a ControllerResolver.
-	 * 
-	 * @param array
-	 */
-/*	private function setController($options)
-	{
-		$controllerString = $options['controller'];
-		$controllerArray = explode(':', $controllerString);
-		$controller = $controllerArray[0];
-		$this->controller = $controller;
-	}
-*/
-
-	/**
-	 * Establece el método del controlador a llamar
-	 * 
-	 * @param array $options
-	 */
-	public function setMethod($options)
-	{
-		$controllerString = $options['controller'];
-		$controllerArray = explode(':', $controllerString);
-		$method = $controllerArray[1];
-		$this->method = $method;
-	}
-
 	/**
 	 * Devuelve el nombre de la ruta
 	 * 
@@ -162,7 +132,6 @@ class Route
 		$regex = '';
 		$varRegex = '';
 		// primero obtener los parámetros de la URL. Deberían haber sido indicados mediante corchetes. Por ejemplo: /route/post/{id}
-		// TODO: implementar reglas, por ejemplo d+ en caso de que sean sólo valores decimales.
 		$matches = array();
 		preg_match_all('#\{\w+\}#', $path, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
 		foreach ($matches as $match) {

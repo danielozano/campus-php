@@ -10,7 +10,7 @@ $routeCollection->add(new Route(
 		'name' => 'ruta1',
 		'path' => '/hello/{name}',
 		'controller' => function($name = 'World') {
-			echo "Hello $name";
+			return new Framework\Http\Response("Hello $name");
 		}
 	)
 ));
