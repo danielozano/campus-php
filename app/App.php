@@ -9,6 +9,8 @@ use Framework\Routing\Matcher;
  * TODO: añadir sistema de template en php
  * TODO: añadir carga de módulos.
  * TODO: implementar entornos: dev y prod.
+ * TODO: impelementar librerías globales.
+ * TODO: implementar Registry para almacenar servicios que estarán disponibles globalmente.
  */
 class App
 {

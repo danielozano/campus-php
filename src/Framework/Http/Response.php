@@ -53,6 +53,7 @@ class Response
 	{
 		$this->setContent($content);
 		$this->headers = $headers;
+		$this->setStatusCode($statusCode);
 	}
 
 	/**
