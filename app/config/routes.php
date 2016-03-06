@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * TODO: cargar aquí las rutas de cada módulo, así podrán definirse rutas de dos formas diferentes.
+ */
 use Framework\Routing\RouteCollection;
 use Framework\Routing\Route;
 
