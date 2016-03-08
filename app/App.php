@@ -7,7 +7,6 @@ use Framework\Routing\Matcher;
 /**
  * TODO: añadir archivos de configuración
  * TODO: añadir sistema de template en php
- * TODO: añadir carga de módulos.
  * TODO: implementar entornos: dev y prod.
  * TODO: impelementar librerías globales.
  * TODO: implementar Registry para almacenar servicios que estarán disponibles globalmente.
@@ -29,6 +28,12 @@ class App
 	private static $registry;
 
 	/**
+	 * Colección de módulos cargados
+	 * 
+	 * @var array
+	 */
+	private $moduleCollection = array();
+	/**
 	 * Constructor
 	 * 
 	 * @param string $enviroment
@@ -45,11 +50,18 @@ class App
 	 */
 	public function run(Request $request)
 	{
-		$this->registerModules();
+		$modules = $this->registerModules();
+		// TODO: Necesito añadir las rutas de los módulos registrados a la colección.
 		$routeCollection = include_once 'config/routes.php';
+		// Obtener las rutas de los módulos cargados
+		$moduleRoutes = $this->getModuleRoutes($this->moduleCollection);
+		// Añadir las rutas a la colección
+		$routeCollection->addAsArray($moduleRoutes);
+
 		$matcher = new Matcher($routeCollection);
 		$router = new Router($matcher);
 		$response = $router->handle($request->getPathInfo());
+
 		// Forzar que todos los controladores devuelvan un objeto Response
 		if (!$response instanceof Response) {
 			throw new \InvalidArgumentException('The controller must return a Response object');
@@ -70,6 +82,7 @@ class App
 		$loader = self::registry('loader');
 
 		foreach ($modules as $module) {
+
 			$moduleNamespace = str_replace('_', '\\', $module);
 			$moduleVendorName = explode('\\', $moduleNamespace)[0];
 			$moduleDir = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR . $moduleVendorName;
@@ -79,7 +92,34 @@ class App
 			}
 			// Añadir namespace para cada módulo mediante psr4 autoloading
 			$loader->addPsr4($moduleVendorName . '\\', $moduleDir);
+
+			// añadir el módulo a la colección de módulos
+			if (array_key_exists($module, $this->moduleCollection)) {
+				throw new \InvalidArgumentException("Error, duplicated module $module");
+			}
+			$this->moduleCollection[$module] = $moduleDir;
 		}
+	}
+
+	/**
+	 * Devuelve un array de rutas. Contiene las rutas
+	 * de todos los módulos.
+	 * 
+	 * @param  array  $modules [description]
+	 * @return array
+	 */
+	private function getModuleRoutes(array $modules)
+	{
+		$result = array();
+		foreach ($modules as $name => $directory) {
+			$routesFile = $directory . DIRECTORY_SEPARATOR . 'routes.php';
+			if (file_exists($routesFile)) {
+				$routes = include_once $routesFile;
+				// TODO: resolver conflicto para rutas con el mismo nombre.
+				$result = array_merge($result, $routes);
+			}
+		}
+		return $result;
 	}
 
 	/**

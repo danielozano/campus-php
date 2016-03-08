@@ -27,6 +27,16 @@ class RouteCollection
 		$this->collection[$routeName] = $route;
 	}
 
+	public function addAsArray(array $routes)
+	{
+		foreach ($routes as $route) {
+			if (!$route instanceof Route) {
+				throw new \InvalidArgumentException("The route must belong to Framework\Routing\Route");
+			}
+			$this->add($route);
+		}
+	}
+
 	/**
 	 * Devuelve una ruta de la colección
 	 * 

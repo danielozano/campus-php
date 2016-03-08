@@ -2,10 +2,12 @@
 
 namespace TestModule\Controller;
 
+use Framework\Http\Response;
+
 class TestController
 {
-	public function __construct()
+	public function bye($a = "World")
 	{
-		die('Working!');
+		return new Response("Goodbye $a");
 	}
 }
