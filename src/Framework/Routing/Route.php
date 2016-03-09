@@ -181,7 +181,12 @@ class Route
 			$varRegex .= "\/(?P<$varName>[^/]+)?";
 		}
 		// La parte estática desde el inicio hasta el inicio del primer parámetro, sin el slash final
-		$staticPath = substr($pattern, 0, $matches[0][0][1] - 1);
+		$pos = strlen($pattern);
+		// Si no hay ningúna coincidencia puede ser que se esté intentando acceder al root /. En caso de que esté intentando acceder a root la parte estática de la ruta es desde el inicio hasta el final del string, en caso de que si existan coincidencias desde el inicio al primero.
+		if (!empty($matches)) {
+			$pos = $matches[0][0][1] - 1;
+		}
+		$staticPath = substr($pattern, 0, $pos);
 		
 		// Generar expresión regular
 		$regex = "~^" . $staticPath . $varRegex . "~";
