@@ -4,5 +4,8 @@
 		"psr-4": {
 			"Framework\\": "src/Framework/"
 		}
+	},
+	"require": {
+		"psr/cache": "^1.0"
 	}
 }

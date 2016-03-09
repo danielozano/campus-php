@@ -82,7 +82,6 @@ class App
 		$loader = self::registry('loader');
 
 		foreach ($modules as $module) {
-
 			$moduleNamespace = str_replace('_', '\\', $module);
 			$moduleVendorName = explode('\\', $moduleNamespace)[0];
 			$moduleDir = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR . $moduleVendorName;
