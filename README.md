@@ -20,37 +20,16 @@ modules/TestModule/Controller/TestController.php
 
 namespace TestModule\Controller;
 
-use Framework\Http\Response;
-
 class TestController
 {
-	public function bye($a = "world")
+	public function __construct()
 	{
-		return new Response("Goodbye $a");
+		die('Working!');
 	}
 }
 ```
-
-Si queremos podemos definir nuestras rutas, individualmente dentro del módulo mediante un archivo routes.php dentro del directorio del módulo, o bien en un archivo genérico situado en app/config/routes.php
-
-Un ejemplo sería:
-app/modules/TestModule/routes.php
-```php
-<?php
-
-use Framework\Routing\Route;
-
-return array(
-	new Route(array(
-		'name' => 'TestController1',
-		'controller' => 'TestModule\Controller\TestController:bye',
-		'path' => '/bye/{a}'
-	))
-);
-```
 ## Novedades
  * Se ha implementado carga dinámica de módulos mediante composer.
- * Carga dinámica de rutas por módulo.
 
 ## Backlog
  * Mejorar librerías del framework.
