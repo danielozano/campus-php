@@ -4,6 +4,7 @@ use Framework\Http\Request;
 use Framework\Http\Response;
 use Framework\Routing\Router;
 use Framework\Routing\Matcher;
+use Framework\Core\Cache\Cache;
 /**
  * TODO: añadir archivos de configuración
  * TODO: añadir sistema de template en php
@@ -33,6 +34,9 @@ class App
 	 * @var array
 	 */
 	private $moduleCollection = array();
+
+	private static $config = array();
+
 	/**
 	 * Constructor
 	 * 
@@ -41,6 +45,8 @@ class App
 	public function __construct($enviroment = 'prod')
 	{
 		$this->enviroment = $enviroment;
+		// TODO: hardcoded por motivos de desarrollo refactorizar
+		self::$config = include_once 'config/config.php';
 	}
 
 	/**
@@ -55,6 +61,9 @@ class App
 		$routeCollection = include_once 'config/routes.php';
 		// Obtener las rutas de los módulos cargados
 		$moduleRoutes = $this->getModuleRoutes($this->moduleCollection);
+
+		$this->_testCache(); // método provisional para probar caché.
+
 		// Añadir las rutas a la colección
 		$routeCollection->addAsArray($moduleRoutes);
 
@@ -141,5 +150,29 @@ class App
 	public static function registry($key)
 	{
 		return self::$registry[$key];
+	}
+
+	private function _testCache()
+	{
+		// Objeto para manejar cache (adaptador para psr6)
+		$cache = new Cache('filesystem');
+		// Guardar un objeto simple
+		$cache->save('key', 'value', 100);
+		// Lo obtenemos
+		$item = $cache->get('key');
+		// Lo borramos
+		$cache->delete($item->getKey());
+		// Intentamos obtenerlo
+		$item = $cache->get('key');
+		// Ya no existe en caché
+		var_dump($item);
+	}
+
+	/**
+	 * TODO: hardcoded por motivos de desarrollo refactorizar
+	 */
+	public static function getConfig()
+	{
+		return self::$config;
 	}
 }

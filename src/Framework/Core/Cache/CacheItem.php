@@ -3,18 +3,57 @@
 namespace Framework\Core\Cache;
 
 use Psr\Cache\CacheItemInterface;
-
+/**
+ * Cada objeto CacheItemInterface debe ser generado y devuelvo por CacheItemPoolInterface
+ */
 class CacheItem implements CacheItemInterface
 {
-	public function getKey() {}
+	private $key;
+	private $value;
+	public function getKey() 
+	{
+		return $this->key;
+	}
 
-	public function get() {}
+	public function setKey($key)
+	{
+		$this->key = $key;
+	}
+	
+	/**
+	 * Obtener el valor almacenado en caché para una clave
+	 * en concreto.
+	 * 
+	 * Debe devoler null si isHit devuelve false
+	 * 
+	 * @return [type] [description]
+	 */
+	public function get()
+	{
+		return $this->value;
+	}
 
-	public function isHit() {}
+	/**
+	 * Comprueba si hay coincidencia en caché o no.
+	 * 
+	 * @return boolean 
+	 */
+	public function isHit(){}
 
-	public function set($value) {}
+	/**
+	 * Establecer el valor para una clave en concreto.
+	 * 
+	 * @param [type] $value [description]
+	 */
+	public function set($value)
+	{
+		$this->value = $value;
+	}
 
-	public function expiresAt($expiration) {}
+	public function expiresAt($expiration)
+	{
+
+	}
 
 	public function expiresAfter($time) {}
 }
