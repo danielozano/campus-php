@@ -12,5 +12,3 @@ $request = Framework\Http\Request::createFromGlobals();
 $app = new App();
 $app::register('loader', $loader);
 $app->run($request);
-
-$cache = new Framework\Core\Cache\Cache();
