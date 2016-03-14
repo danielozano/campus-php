@@ -4,7 +4,6 @@ use Framework\Http\Request;
 use Framework\Http\Response;
 use Framework\Routing\Router;
 use Framework\Routing\Matcher;
-use Framework\Core\Cache\Cache;
 /**
  * TODO: añadir archivos de configuración
  * TODO: añadir sistema de template en php
@@ -62,15 +61,13 @@ class App
 		// Obtener las rutas de los módulos cargados
 		$moduleRoutes = $this->getModuleRoutes($this->moduleCollection);
 
-		$this->_testCache(); // método provisional para probar caché.
-
 		// Añadir las rutas a la colección
 		$routeCollection->addAsArray($moduleRoutes);
 
 		$matcher = new Matcher($routeCollection);
 		$router = new Router($matcher);
 		$response = $router->handle($request->getPathInfo());
-
+		
 		// Forzar que todos los controladores devuelvan un objeto Response
 		if (!$response instanceof Response) {
 			throw new \InvalidArgumentException('The controller must return a Response object');
@@ -150,22 +147,6 @@ class App
 	public static function registry($key)
 	{
 		return self::$registry[$key];
-	}
-
-	private function _testCache()
-	{
-		// Objeto para manejar cache (adaptador para psr6)
-		$cache = new Cache('filesystem');
-		// Guardar un objeto simple
-		$cache->save('key', 'value', 100);
-		// Lo obtenemos
-		$item = $cache->get('key');
-		// Lo borramos
-		$cache->delete($item->getKey());
-		// Intentamos obtenerlo
-		$item = $cache->get('key');
-		// Ya no existe en caché
-		var_dump($item);
 	}
 
 	/**

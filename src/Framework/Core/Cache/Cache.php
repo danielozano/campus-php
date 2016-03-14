@@ -1,50 +1,39 @@
 <?php
-
 namespace Framework\Core\Cache;
 
-use Framework\Core\Cache\CacheItem;
-/**
- * Adaptador
- */
-// NOTE: en desarrollo
-class Cache
+class Cache implements CacheInterface
 {
-	private $namespace = __NAMESPACE__;
 	private $cacheSystem;
 
-	public function __construct($type = 'filesystem')
+	public function __construct($system = 'filesystem')
 	{
-		$type = ucfirst($type);
-		$type .= 'Cache';
-		$type = $this->namespace . '\\' .$type;
-		$this->cacheSystem = new $type;
+		$namespace = __NAMESPACE__;
+		$className = $namespace . '\\Drivers\\' . ucfirst($system);
+
+		$this->cacheSystem = new $className;
 	}
 
-	public function save($key, $value, $ttl)
+	public function store($key, $data, $ttl = 3600)
 	{
-		$item = new CacheItem();
-		$item->setKey($key);
-		$item->set($value);
-		// TODO: crear datetime para ttl, falta sumar ahora + tiempo de vida
-		$item->expiresAt($ttl);
-
-		$this->cacheSystem->save($item);
+		return $this->cacheSystem->store($key, $data, $ttl);
 	}
 
-	public function get($key)
+	public function fetch($key)
 	{
-		return $this->cacheSystem->getItem($key);
+		return $this->cacheSystem->fetch($key);
 	}
 
 	public function delete($key)
 	{
-		if ($this->cacheSystem->hasItem($key)) {
+		return $this->cacheSystem->delete($key);
+	}
 
-			$this->cacheSystem->deleteItem($key);
-
-			return true;
-		}
-
-		return false;
+	public function exists($key)
+	{
+		return $this->cacheSystem->exists($key);
+	}
+	public function clear()
+	{
+		return $this->cacheSystem->clear();
 	}
 }
