@@ -4,6 +4,7 @@ use Framework\Http\Request;
 use Framework\Http\Response;
 use Framework\Routing\Router;
 use Framework\Routing\Matcher;
+use Framework\Core\Cache\Cache;
 /**
  * TODO: añadir archivos de configuración
  * TODO: añadir sistema de template en php
@@ -37,6 +38,13 @@ class App
 	private static $config = array();
 
 	/**
+	 * Habilitar/deshabilitar caché
+	 * TODO: harcoded, leer de config
+	 * @var boolean
+	 */
+	private $cacheActive = true;
+
+	/**
 	 * Constructor
 	 * 
 	 * @param string $enviroment
@@ -55,23 +63,34 @@ class App
 	 */
 	public function run(Request $request)
 	{
-		$modules = $this->registerModules();
-		// TODO: Necesito añadir las rutas de los módulos registrados a la colección.
-		$routeCollection = include_once 'config/routes.php';
-		// Obtener las rutas de los módulos cargados
-		$moduleRoutes = $this->getModuleRoutes($this->moduleCollection);
+		$cacheSystem = 'filesystem';
+		$cache = new Cache($cacheSystem);
+		$key = $cache->createKey($request->getPathInfo());
 
-		// Añadir las rutas a la colección
-		$routeCollection->addAsArray($moduleRoutes);
+		if ($this->cacheActive && !$cache->exists($key)) {
+			$modules = $this->registerModules();
+			// TODO: Necesito añadir las rutas de los módulos registrados a la colección.
+			$routeCollection = include_once 'config/routes.php';
+			// Obtener las rutas de los módulos cargados
+			$moduleRoutes = $this->getModuleRoutes($this->moduleCollection);
 
-		$matcher = new Matcher($routeCollection);
-		$router = new Router($matcher);
-		$response = $router->handle($request->getPathInfo());
-		
-		// Forzar que todos los controladores devuelvan un objeto Response
-		if (!$response instanceof Response) {
-			throw new \InvalidArgumentException('The controller must return a Response object');
+			// Añadir las rutas a la colección
+			$routeCollection->addAsArray($moduleRoutes);
+			$matcher = new Matcher($routeCollection);
+			$router = new Router($matcher);
+			$response = $router->handle($request->getPathInfo());
+			
+			// Forzar que todos los controladores devuelvan un objeto Response
+			if (!$response instanceof Response) {
+				throw new \InvalidArgumentException('The controller must return a Response object');
+			}
+
+			$cache->store($key, $response->getcontent());
+		} elseif ($this->cacheActive && $cache->exists($key)) {
+			$content = $cache->fetch($key);
+			$response = new Response($content);
 		}
+		
 		$response->sendResponse();
 	}
 
@@ -155,5 +174,18 @@ class App
 	public static function getConfig()
 	{
 		return self::$config;
+	}
+
+	public function loadCache(Request $request)
+	{
+		$cacheType = 'filesystem';
+		$cache = new Cache($cacheType);
+
+		$key = $cache->createKey($request->getPathInfo());
+
+		if (!$cache->exists($key)) {
+			return false;
+		}
+		
 	}
 }

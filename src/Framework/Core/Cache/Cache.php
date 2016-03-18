@@ -36,4 +36,12 @@ class Cache implements CacheInterface
 	{
 		return $this->cacheSystem->clear();
 	}
+	public function createKey($key)
+	{
+		if (is_array($key)) {
+
+		} else {
+			return md5($key);
+		}
+	}
 }

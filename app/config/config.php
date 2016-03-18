@@ -1,5 +1,5 @@
 <?php
 
 return array(
-	'cache_dir' => dirname(__FILE__) . '/../var/cache'
+	'cache_dir' => '/var/www/campus/app/var/cache'
 );
