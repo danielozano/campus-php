@@ -35,6 +35,11 @@ class App
 	 */
 	private $moduleCollection = array();
 
+	/**
+	 * Configuración global de la aplicación
+	 * 
+	 * @var array
+	 */
 	private static $config = array();
 
 	/**
@@ -52,8 +57,16 @@ class App
 	public function __construct($enviroment = 'prod')
 	{
 		$this->enviroment = $enviroment;
-		// TODO: hardcoded por motivos de desarrollo refactorizar
-		self::$config = include_once 'config/config.php';
+		// inicializar parámetros de configuración
+		if (empty(self::$config)) {
+			$this->initConfig();
+		}
+	}
+
+	private function initConfig()
+	{
+		$enviroment = ($this->enviroment === 'prod') ? '' : DIRECTORY_SEPARATOR . 'dev';
+		self::$config = require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'config' . $enviroment . DIRECTORY_SEPARATOR . 'config.php';
 	}
 
 	/**
@@ -69,7 +82,6 @@ class App
 
 		if ($this->cacheActive && !$cache->exists($key)) {
 			$modules = $this->registerModules();
-			// TODO: Necesito añadir las rutas de los módulos registrados a la colección.
 			$routeCollection = include_once 'config/routes.php';
 			// Obtener las rutas de los módulos cargados
 			$moduleRoutes = $this->getModuleRoutes($this->moduleCollection);
@@ -169,23 +181,29 @@ class App
 	}
 
 	/**
-	 * TODO: hardcoded por motivos de desarrollo refactorizar
+	 * Obtener todos los parámetros de configuración de la
+	 * aplicación, o uno específico.
+	 *
+	 * El nivel de profundidad de la opción a obtener se
+	 * indicará mediante puntos(.). Ejemplo:
+	 * "cache.directory" o "cache.system"
+	 * 
+	 * @param  string $option
+	 * @return mixed
 	 */
-	public static function getConfig()
+	public static function getConfig($option = null)
 	{
-		return self::$config;
-	}
-
-	public function loadCache(Request $request)
-	{
-		$cacheType = 'filesystem';
-		$cache = new Cache($cacheType);
-
-		$key = $cache->createKey($request->getPathInfo());
-
-		if (!$cache->exists($key)) {
-			return false;
+		if (null === $option) {
+			return self::$config;	
 		}
 		
+		$option = explode('.', $option);
+		
+		$config = self::$config;
+		foreach ($option as $level) {
+			$config = $config[$level];
+		}
+
+		return $config;
 	}
 }
