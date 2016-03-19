@@ -4,6 +4,7 @@ use Framework\Http\Request;
 use Framework\Http\Response;
 use Framework\Routing\Router;
 use Framework\Routing\Matcher;
+use Framework\Core\Cache\Cache;
 /**
  * TODO: añadir archivos de configuración
  * TODO: añadir sistema de template en php
@@ -33,6 +34,21 @@ class App
 	 * @var array
 	 */
 	private $moduleCollection = array();
+
+	/**
+	 * Configuración global de la aplicación
+	 * 
+	 * @var array
+	 */
+	private static $config = array();
+
+	/**
+	 * Habilitar/deshabilitar caché
+	 * TODO: harcoded, leer de config
+	 * @var boolean
+	 */
+	private $cacheActive = true;
+
 	/**
 	 * Constructor
 	 * 
@@ -41,6 +57,16 @@ class App
 	public function __construct($enviroment = 'prod')
 	{
 		$this->enviroment = $enviroment;
+		// inicializar parámetros de configuración
+		if (empty(self::$config)) {
+			$this->initConfig();
+		}
+	}
+
+	private function initConfig()
+	{
+		$enviroment = ($this->enviroment === 'prod') ? '' : DIRECTORY_SEPARATOR . 'dev';
+		self::$config = require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'config' . $enviroment . DIRECTORY_SEPARATOR . 'config.php';
 	}
 
 	/**
@@ -50,22 +76,33 @@ class App
 	 */
 	public function run(Request $request)
 	{
-		$modules = $this->registerModules();
-		// TODO: Necesito añadir las rutas de los módulos registrados a la colección.
-		$routeCollection = include_once 'config/routes.php';
-		// Obtener las rutas de los módulos cargados
-		$moduleRoutes = $this->getModuleRoutes($this->moduleCollection);
-		// Añadir las rutas a la colección
-		$routeCollection->addAsArray($moduleRoutes);
+		$cacheSystem = 'filesystem';
+		$cache = new Cache($cacheSystem);
+		$key = $cache->createKey($request->getPathInfo());
 
-		$matcher = new Matcher($routeCollection);
-		$router = new Router($matcher);
-		$response = $router->handle($request->getPathInfo());
+		if ($this->cacheActive && !$cache->exists($key)) {
+			$modules = $this->registerModules();
+			$routeCollection = include_once 'config/routes.php';
+			// Obtener las rutas de los módulos cargados
+			$moduleRoutes = $this->getModuleRoutes($this->moduleCollection);
 
-		// Forzar que todos los controladores devuelvan un objeto Response
-		if (!$response instanceof Response) {
-			throw new \InvalidArgumentException('The controller must return a Response object');
+			// Añadir las rutas a la colección
+			$routeCollection->addAsArray($moduleRoutes);
+			$matcher = new Matcher($routeCollection);
+			$router = new Router($matcher);
+			$response = $router->handle($request->getPathInfo());
+			
+			// Forzar que todos los controladores devuelvan un objeto Response
+			if (!$response instanceof Response) {
+				throw new \InvalidArgumentException('The controller must return a Response object');
+			}
+
+			$cache->store($key, $response->getcontent());
+		} elseif ($this->cacheActive && $cache->exists($key)) {
+			$content = $cache->fetch($key);
+			$response = new Response($content);
 		}
+		
 		$response->sendResponse();
 	}
 
@@ -82,7 +119,6 @@ class App
 		$loader = self::registry('loader');
 
 		foreach ($modules as $module) {
-
 			$moduleNamespace = str_replace('_', '\\', $module);
 			$moduleVendorName = explode('\\', $moduleNamespace)[0];
 			$moduleDir = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR . $moduleVendorName;
@@ -142,5 +178,32 @@ class App
 	public static function registry($key)
 	{
 		return self::$registry[$key];
+	}
+
+	/**
+	 * Obtener todos los parámetros de configuración de la
+	 * aplicación, o uno específico.
+	 *
+	 * El nivel de profundidad de la opción a obtener se
+	 * indicará mediante puntos(.). Ejemplo:
+	 * "cache.directory" o "cache.system"
+	 * 
+	 * @param  string $option
+	 * @return mixed
+	 */
+	public static function getConfig($option = null)
+	{
+		if (null === $option) {
+			return self::$config;	
+		}
+		
+		$option = explode('.', $option);
+		
+		$config = self::$config;
+		foreach ($option as $level) {
+			$config = $config[$level];
+		}
+
+		return $config;
 	}
 }

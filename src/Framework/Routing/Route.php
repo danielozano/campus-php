@@ -6,7 +6,6 @@ namespace Framework\Routing;
 /**
  * TODO: hacer obligatorios las opciones: path, name y controller.
  * TODO: Generar regex con restricciones (decimal, string)
- * TODO: arreglar regex para que se admita un tailing slash, ejemplo: /hola/{name} resuelva a: /hola y /hola/daniel. Debería coincidir con /hola, /hola/ y /hola/daniel
  */
 /**
  * La funcionalidad de esta clase es otorgar abstracción a una entidad Ruta. Es decir poder manipular
@@ -135,7 +134,7 @@ class Route
 		$matches = array();
 		preg_match_all('#\{\w+\}#', $path, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
 		foreach ($matches as $match) {
-			$varRegex .= '(/[^/]+)';
+			$varRegex .= '(/[^/]+)?';
 			//$varRegex .= '(?:/\w+)';
 		}
 		// Obtener string antes de la primera variable en la ruta, es decir la parte estática de la ruta. Para ello necesitamos la posición en el string de la primera variable, y restarle uno ya que no deseamos que se incluya el slash /, porque ya está incluido dentro de la regex generada anteriormente.
@@ -151,7 +150,7 @@ class Route
 			$regex .= $varRegex;
 		}
 		$regex .= '$#s';
-
+		
 		return $regex;
 	}
 
@@ -181,7 +180,12 @@ class Route
 			$varRegex .= "\/(?P<$varName>[^/]+)?";
 		}
 		// La parte estática desde el inicio hasta el inicio del primer parámetro, sin el slash final
-		$staticPath = substr($pattern, 0, $matches[0][0][1] - 1);
+		$pos = strlen($pattern);
+		// Si no hay ningúna coincidencia puede ser que se esté intentando acceder al root /. En caso de que esté intentando acceder a root la parte estática de la ruta es desde el inicio hasta el final del string, en caso de que si existan coincidencias desde el inicio al primero.
+		if (!empty($matches)) {
+			$pos = $matches[0][0][1] - 1;
+		}
+		$staticPath = substr($pattern, 0, $pos);
 		
 		// Generar expresión regular
 		$regex = "~^" . $staticPath . $varRegex . "~";
