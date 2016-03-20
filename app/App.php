@@ -206,4 +206,47 @@ class App
 
 		return $config;
 	}
+
+	/**
+	 * Añade un nuevo valor de configuración al
+	 * array de configuración actual
+	 * 
+	 * @param mixed|string $key
+	 * @param mixed $value
+	 */
+	public static function setConfig($key, $value = null)
+	{
+		$keyArray = explode('.', $key);
+
+		if (count($keyArray) <= 0) {
+			self::$config[$key] = $value;
+			return true;
+		}
+
+		if (is_array($key)) {
+			$finalArray = array_merge(self::$config, $key);
+			self::$config = $finalArray;
+			return true;
+		}
+
+		$nElements = count($keyArray);
+		$index = $nElements;
+		$result = array();
+
+		while (count($keyArray) > 0) {
+			$current = array_pop($keyArray);
+			if ($index === $nElements) {
+				$result = array($current => $value);
+			} else {
+				$result = array($current => $result);	
+			}
+			$index--;
+		}
+
+		$finalArray = array_merge(self::$config, $result);
+
+		self::$config = $finalArray;
+
+		return true;
+	}
 }
